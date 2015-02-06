@@ -1,0 +1,57 @@
+{
+  "name": "google-admin-sdk",
+  "version": "0.0.0",
+  "description": "node.js library that wraps the Directory and Groups APIs in the Google Admin SDK",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Clever/node-google-admin-sdk.git"
+  },
+  "author": "Clever",
+  "bugs": {
+    "url": "https://github.com/Clever/node-google-admin-sdk/issues"
+  },
+  "homepage": "https://github.com/Clever/node-google-admin-sdk",
+  "dependencies": {
+    "async": "^0.9.0",
+    "coffee-errors": "^0.8.6",
+    "coffee-script": "^1.9.0",
+    "dotty": "0.0.2",
+    "http-string-parser": "0.0.4",
+    "mailparser": "^0.4.8",
+    "qs": "^2.3.3",
+    "quest": "^0.2.8",
+    "retry": "^0.6.1",
+    "sanitize-arguments": "^2.0.3",
+    "underscore": "^1.7.0",
+    "underscore.string": "^3.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "nock": "~0.47.0",
+    "sinon": "^1.12.2"
+  },
+  "keywords": [
+    "directory",
+    "api",
+    "groups",
+    "api",
+    "google",
+    "directory",
+    "api",
+    "google",
+    "groups",
+    "api",
+    "admin",
+    "sdk",
+    "google",
+    "admin",
+    "sdk"
+  ]
+}
