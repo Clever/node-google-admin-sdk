@@ -1,7 +1,7 @@
 assert = require 'assert'
 async  = require 'async'
 _      = require 'underscore'
-google_apis = require "#{__dirname}/../lib/google_apis_admin_sdk/"
+google_apis = require "#{__dirname}/../lib/"
 nock   = require 'nock'
 util = require 'util'
 
@@ -16,7 +16,7 @@ before ->
 beforeEach ->
   nock.cleanAll()
 
-describe 'Retry', ()->
+describe 'Retry', ->
   before ->
     @retry_count = 5
     @up = new google_apis.UserProvisioning
@@ -26,7 +26,7 @@ describe 'Retry', ()->
 
   # The following 2 test verifies that @up.get is indeed retrying for @retry_count times.
   # Including the initial request, there are retry_count + 1 total requests.
-  it 'retries for retry_count times but nocked for (retry_count + 1) times', (done) ->
+  it "retries for `retry_count` times but nocked for `(retry_count + 1)` times", (done) ->
     # Nock out all requests with failure
     nock('https://www.googleapis.com:443').get('/admin/directory/v1/users/1234567890')
     .times(@retry_count + 1).reply(500, 'FAIL')

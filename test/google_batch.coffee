@@ -1,7 +1,7 @@
 assert = require 'assert'
 async  = require 'async'
 _      = require 'underscore'
-google_apis = require "#{__dirname}/../lib/google_apis_admin_sdk/"
+google_apis = require "#{__dirname}/../lib/"
 nock   = require 'nock'
 util = require 'util'
 
