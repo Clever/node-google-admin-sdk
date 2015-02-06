@@ -53,5 +53,8 @@
     "google",
     "admin",
     "sdk"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  }
 }
