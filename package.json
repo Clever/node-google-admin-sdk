@@ -1,6 +1,6 @@
 {
   "name": "google-admin-sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "node.js library that wraps the Directory and Groups APIs in the Google Admin SDK",
   "main": "index.js",
   "directories": {
