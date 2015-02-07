@@ -91,7 +91,7 @@ module.exports = (data, id_num = 100000000) ->
         cb_m err, { statusCode: status_code, body: result }
     ), cb
 
-  # uhhh yeah this is dirty because it assumes the only fn to make Queries is user/list
+  # assumes the only function to make Queries is user/list
   sandbox.stub query.Query.prototype, 'stream', () ->
     return new SimpleStream admin_sdk.data.users
 
@@ -101,6 +101,6 @@ module.exports = (data, id_num = 100000000) ->
       super { objectMode: true }
       @i = 0
     _read: () =>
-      @push @data[@i++] # will push(null) when i >= data.length, so just works (tm)
+      @push @data[@i++] # will push(null) when i >= data.length
 
   admin_sdk

@@ -1,5 +1,4 @@
 quest    = require 'quest'
-scopes   = require "#{__dirname}/scopes"
 dotty    = require 'dotty'
 _        = require 'underscore'
 _.str    = require 'underscore.string'
@@ -21,10 +20,10 @@ class GoogleAPIAdminSDK
   retry_options: {maxTimeout: 3 * 60 * 1000, retries: 5, randomize: true}
   @retry_err: (err, resp) ->
     return err if err?
-    # 500/502 = "backend error", Google screwed up, we retry
-    # 403/503 = rate limiting errors, we retry
-    # 404 = I dont know.., ggprov-worker/googleapi/googleapi.go does it...
-    # 412 = Google claims this shouldn't exist anymore, we retry
+    # 500/502 = "backend error"
+    # 403/503 = rate limiting errors
+    # 404
+    # 412
     if resp.statusCode in [403, 404, 412, 500, 502, 503]
       return new Error "Status code #{resp.statusCode} from Google"
     return null
