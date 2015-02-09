@@ -1,4 +1,3 @@
-require 'coffee-errors'
 _ = require 'underscore'
 sinon = require 'sinon'
 admin_sdk = require "#{__dirname}"

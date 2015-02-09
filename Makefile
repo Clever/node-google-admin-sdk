@@ -7,7 +7,5 @@ TESTS=google google_batch
 test: $(TESTS)
 
 $(TESTS):
-	node_modules/mocha/bin/mocha -r coffee-errors --reporter spec --bail --timeout 60000 test/$@.coffee
- 
-#.PHONY: test unit unit-w all $(TESTS)
+	node_modules/mocha/bin/mocha --reporter spec --bail --timeout 60000 --compilers ./node_modules/.bin/coffee:coffee-script/register test/$@.coffee
 
