@@ -4,6 +4,7 @@ _        = require 'underscore'
 _.str    = require 'underscore.string'
 retry    = require 'retry'
 
+
 # base google api class. provides functions for:
 # static methods for:
 # 1. Generating an initial oauth redirect with scopes you want
