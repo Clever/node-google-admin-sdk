@@ -1,7 +1,7 @@
 assert = require 'assert'
 async  = require 'async'
 _      = require 'underscore'
-google_apis = require "#{__dirname}/../lib/"
+google_apis = require "#{__dirname}/../"
 nock   = require 'nock'
 util = require 'util'
 
@@ -48,7 +48,7 @@ describe 'Retry', ->
 
 describe 'oauth2_request', ->
   it 'does not deadlock with request_refresh_token if no refresh token', (done) ->
-    gsdk = new google_apis.GoogleAPIAdminSDK
+    gsdk = new google_apis.AdminSDK
       token:
         refresh: 'sometoken'
         access: 'someaccess'
@@ -74,7 +74,7 @@ describe 'oauth2_request', ->
       done()
 
   it 'does not deadlock with request_refresh_token if genuinely invalid credentials', (done) ->
-    gsdk = new google_apis.GoogleAPIAdminSDK
+    gsdk = new google_apis.AdminSDK
       token:
         refresh: 'sometoken'
         access: 'someaccess'
