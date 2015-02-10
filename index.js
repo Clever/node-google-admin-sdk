@@ -1,3 +1,5 @@
+require('coffee-script/register');
+
 module.exports = {
   AdminSDK: require("./lib/google_api_admin_sdk"),
   GroupProvisioning: require("./lib/group_provisioning"),
