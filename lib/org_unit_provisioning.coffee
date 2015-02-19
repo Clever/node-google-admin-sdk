@@ -81,7 +81,7 @@ class OrgUnit extends GoogleAPIAdminSDK
   findOrCreate: (customer_id, org_unit, cache, cb) =>
     if _(cache).isFunction()
       cb = cache
-      cache = []
+      cache = {}
     arglist = sanitize arguments, OrgUnit.findOrCreate, [String, Array, Function]
     args = _.object ['customer_id', 'org_unit', 'cb'], arglist
     die = utils.die_fn args.cb
@@ -90,7 +90,7 @@ class OrgUnit extends GoogleAPIAdminSDK
     parent = '/'
     async.eachSeries args.org_unit, (level, cb_es) =>
       full_path = if parent is '/' then "/#{level}" else "#{parent}/#{level}"
-      if full_path in cache
+      if cache[full_path]?
         parent = full_path
         return cb_es()
       @insert args.customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
@@ -98,7 +98,7 @@ class OrgUnit extends GoogleAPIAdminSDK
         # Don't treat this as an error
         if err? and not (err?.error?.code is 400 and err?.error?.message is 'Invalid Ou Id')
           return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}"
-        cache.push full_path
+        cache[full_path] = true
         parent = full_path
         cb_es()
     , (err) ->
