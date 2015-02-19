@@ -98,7 +98,7 @@ class OrgUnit extends GoogleAPIAdminSDK
         # Don't treat this as an error
         if err? and not (err?.error?.code is 400 and err?.error?.message is 'Invalid Ou Id')
           return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}"
-        cache[full_path] = true
+        cache[full_path] = 1
         parent = full_path
         cb_es()
     , (err) ->
