@@ -515,6 +515,16 @@ describe 'OrgUnitProvisioning', ()->
       assert.deepEqual err, error
       done()
 
+  it 'uses cache for OU lookup', (done) ->
+    org_unit = ['Students']
+    cache = {'/Students':1, '/Students/Schoolname':1}
+    @ou.findOrCreate 'abcdef', org_unit, cache, (err, parent, cache) ->
+      # this test is successful if it hits the cache and doesn't trigger nock.disableNetConnect()
+      assert.ifError err
+      assert.deepEqual cache, {'/Students':1, '/Students/Schoolname':1}
+      assert.equal parent, '/Students'
+      done()
+
   ## INSERT ##
   it 'creates an orgunit', (done) ->
     properties =
@@ -529,6 +539,24 @@ describe 'OrgUnitProvisioning', ()->
     .reply(200, body)
     @ou.insert 'fake_customer_id', properties, (err, data) ->
       assert.deepEqual data, body
+      done()
+
+  it 'creates an orgunit if not found', (done) ->
+    properties =
+      name: 'TestOU'
+      parentOrgUnitPath: '/'
+    body =
+      kind: 'admin#directory#orgUnit'
+      name: 'TestOU'
+      orgUnitPath: '/TestOU'
+      parentOrgUnitPath: '/'
+    insert_nock = nock('https://www.googleapis.com:443').post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
+    .reply(200, body)
+    @ou.findOrCreate 'fake_customer_id', ['TestOU'], (err, parent, cache) ->
+      assert.ifError err
+      assert.deepEqual cache, {'/TestOU':1}
+      assert.equal parent, '/TestOU'
+      insert_nock.done()
       done()
 
   it 'creates an orgunit with fields args for partial response', (done) ->

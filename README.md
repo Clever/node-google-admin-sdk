@@ -68,7 +68,7 @@ The following provide functionality for querying the orgunits endpoint of the Di
 Creates an OrgUnit and any of its parents that need to be created. Accepts arguments:
 * `customer_id`: your Google customer id.
 * `org_unit`: an array of the form that specifies the path of the OrgUnit to create. For example, to create the OrgUnit "/Users/Admins/SuperAdmins", pass in `['Users', 'Admins', 'SuperAdmins'].
-* `cache` (optional): a list of strings representing OrgUnits that are known to exist. For example, `['/', 'Users', 'Admins']
+* `cache` (optional): a map of strings representing OrgUnits that are known to exist. For example, `{'/': 1, 'Users':1, 'Admins':1}
 * `callback` (optional): function of the form `callback(error, body)` to call when the response is received.
 
 ### OrgUnitProvisioning.insert(customer_id, properties[, fields, callback])
