@@ -14,6 +14,15 @@ module.exports =
     admin_sdk.sandbox = sandbox
     admin_sdk.restore = -> sandbox.restore()
 
+    generate_ou = (org_unit_path) ->
+      ou =
+        kind: "admin#directory#orgUnit"
+        name: org_unit_path[1..]
+        orgUnitPath: org_unit_path
+        orgUnitId: "id:ou_id"
+        parentOrgUnitPath: '/'
+      return ou
+
     # fast lookup by email
     admin_sdk.refresh_map = ->
       admin_sdk.data_users_map = {}
@@ -21,8 +30,20 @@ module.exports =
       for i, user of admin_sdk.data?.users
         admin_sdk.data_users_map[user.primaryEmail.toLowerCase()] = user
       if admin_sdk.data?.orgunits?
-        admin_sdk.data_orgunits_map[ou] = true for ou in admin_sdk.data.orgunits
+        admin_sdk.data_orgunits_map[ou] = generate_ou(ou) for ou in admin_sdk.data.orgunits
     admin_sdk.refresh_map()
+
+    # Currently, the mock library supports only this particular invocation of OrgUnitProvisioning.get
+    sandbox.stub admin_sdk.OrgUnitProvisioning.prototype, 'get', (customer_id, org_unit_path, cb) =>
+      # this method takes in org_unit_path without the leading slash, but our mock-db keys include the
+      # leading slash, so append it
+      existing_ou = admin_sdk.data_orgunits_map["/#{org_unit_path}"]
+      return cb null, existing_ou if existing_ou?
+      return cb
+        error:
+          errors: []
+          code: 404,
+          message: "Org unit not found"
 
     sandbox.stub admin_sdk.OrgUnitProvisioning.prototype, 'insert', (customer_id, properties, cb) =>
       parent = properties.parentOrgUnitPath
@@ -36,14 +57,15 @@ module.exports =
             message: 'Invalid Ou Id'
         return cb err, null
       else
-        admin_sdk.data.orgunits.push full_path
-        admin_sdk.data_orgunits_map[full_path] = true
-        response =
-          kind: "admin#directory#orgUnit"
-          name: properties.name
-          orgUnitPath: full_path
-          parentOrgUnitPath: properties.parentOrgUnitPath
-        return cb null, response
+      admin_sdk.data.orgunits.push full_path
+      response =
+        kind: "admin#directory#orgUnit"
+        name: properties.name
+        orgUnitPath: full_path
+        orgUnitId: "id:ou_id"
+        parentOrgUnitPath: properties.parentOrgUnitPath
+      admin_sdk.data_orgunits_map[full_path] = response
+      return cb null, response
 
     sandbox.stub admin_sdk.UserProvisioning.prototype, 'insert', (body, fields, cb) =>
       if _(fields).isFunction()
@@ -55,6 +77,7 @@ module.exports =
           return cb_exec error: { code: 409, message: 'Entity already exists.' }
         generated_properties =
           hashFunction: 'SHA-1'
+          orgUnitId: 'id:ou_id'
           kind: "admin#directory#user"
           id: "" + id_num++
           isAdmin: false

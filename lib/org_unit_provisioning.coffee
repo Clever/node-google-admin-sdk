@@ -76,7 +76,7 @@ class OrgUnit extends GoogleAPIAdminSDK
     return q unless args.cb?
     q.exec args.cb
 
-  # takes customer_id, array of orgunit levels eg. ['/', 'Students', 'Schoolname', ...], and optional cache, and callback
+  # takes customer_id, array of orgunit levels eg. ['CleverStudents', 'Schoolname', ...], and optional cache, and callback
   # returns callback w/ args orgunit string '/Students/Schoolname' and cache of orgunits created '/', '/Students', '/Students/Schoolname'
   findOrCreate: (customer_id, org_unit, cache, cb) =>
     if _(cache).isFunction()
@@ -88,19 +88,41 @@ class OrgUnit extends GoogleAPIAdminSDK
     if not args.customer_id? or not args.org_unit?
       return die "OrgUnit::findOrCreate expected (String customer_id, Array org_unit, [callback])"
     parent = '/'
+
+    # for each level in the OU, find that OU or create it and store the response in the cache
     async.eachSeries args.org_unit, (level, cb_es) =>
       full_path = if parent is '/' then "/#{level}" else "#{parent}/#{level}"
       if cache[full_path]?
         parent = full_path
         return cb_es()
-      @insert args.customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
-        # If the Ou already exists, Google returns error code 400 with the message 'Invalid Ou Id'
-        # Don't treat this as an error
-        if err? and not (err?.error?.code is 400 and err?.error?.message is 'Invalid Ou Id')
-          return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}"
-        cache[full_path] = 1
-        parent = full_path
-        cb_es()
+      async.waterfall [
+        (cb_wf) =>
+          # Make a request to find this OU first. Only make an insert request if the OU doesn't
+          # already exist.
+          @get args.customer_id, full_path[1..], (err, body) ->
+            if err?
+              if err.error?.code is 404 and err.error?.message is "Org unit not found"
+                # Not found; pass through to create the orgunit
+                return cb_wf null, null
+              else
+                # A valid error was returned. Return the error and skip the insert.
+                return cb_wf err
+
+            # If no error, we found the orgunit. Cache it and skip insert because it already exists.
+            cache[full_path] = body
+            parent = full_path
+            return cb_wf null, body
+        (body, cb_wf) =>
+          # No need to insert because the org unit was found
+          return cb_wf() if body?
+
+          # Google interface: `name` requires no slash, parentOrgUnitPath requires a slash
+          @insert args.customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
+            return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}" if err?
+            cache[full_path] = body
+            parent = full_path
+            cb_wf()
+      ], cb_es
     , (err) ->
       return die err if err?
       cb null, parent, cache
