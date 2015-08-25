@@ -16,7 +16,8 @@ notify:
     on_failure: true
 publish:
   npm:
-    email: {{npm_drone_email}}
-    username: {{npmdeployusername}}
-    password: {{npmdeploypassword}}
-    branch: master
+    email: $$npm_drone_email
+    username: $$npmdeployusername
+    password: $$npmdeploypassword
+    when:
+      branch: master
