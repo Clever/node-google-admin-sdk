@@ -545,7 +545,7 @@ describe 'OrgUnitProvisioning', ()->
       assert.equal parent, '/Students'
       done()
 
-  it.only 'findOrCreate properly memoizes calls to get and insert', (done) ->
+  it 'findOrCreate properly memoizes calls to get and insert', (done) ->
     org_unit = ['TestOU']
     properties =
       name: 'TestOU'
@@ -601,45 +601,45 @@ describe 'OrgUnitProvisioning', ()->
 
   it 'returns an orgunit if it already exists', (done) ->
     properties =
-      name: 'TestOU'
+      name: 'TestOUAlreadyExists'
       parentOrgUnitPath: '/'
     body =
       kind: 'admin#directory#orgUnit'
-      name: 'TestOU'
-      orgUnitPath: '/TestOU'
+      name: 'TestOUAlreadyExists'
+      orgUnitPath: '/TestOUAlreadyExists'
       orgUnitId: 'ou_id_already_exists'
       parentOrgUnitPath: '/'
-    nock('https://www.googleapis.com:443').persist().get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+    nock('https://www.googleapis.com:443').persist().get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOUAlreadyExists')
     .reply(200, body)
-    @ou.findOrCreate 'fake_customer_id', ['TestOU'], (err, parent, cache) ->
+    @ou.findOrCreate 'fake_customer_id', ['TestOUAlreadyExists'], (err, parent, cache) ->
       assert.ifError err
-      assert.deepEqual cache, {'/TestOU': body}
-      assert.equal parent, '/TestOU'
+      assert.deepEqual cache, {'/TestOUAlreadyExists': body}
+      assert.equal parent, '/TestOUAlreadyExists'
       done()
 
   it 'creates an orgunit if not found', (done) ->
     properties =
-      name: 'TestOU'
+      name: 'TestOUCreate'
       parentOrgUnitPath: '/'
     body =
       kind: 'admin#directory#orgUnit'
-      name: 'TestOU'
-      orgUnitPath: '/TestOU'
+      name: 'TestOUCreate'
+      orgUnitPath: '/TestOUCreate'
       orgUnitId: 'ou_id'
       parentOrgUnitPath: '/'
 
     nock('https://www.googleapis.com:443').persist()
-      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOUCreate')
       .reply(404, ou_not_found)
 
     insert_nock = nock('https://www.googleapis.com:443')
       .post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
       .reply(200, body)
 
-    @ou.findOrCreate 'fake_customer_id', ['TestOU'], (err, parent, cache) ->
+    @ou.findOrCreate 'fake_customer_id', ['TestOUCreate'], (err, parent, cache) ->
       assert.ifError err
-      assert.deepEqual cache, {'/TestOU': body}
-      assert.equal parent, '/TestOU'
+      assert.deepEqual cache, {'/TestOUCreate': body}
+      assert.equal parent, '/TestOUCreate'
       insert_nock.done()
       done()
 

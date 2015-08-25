@@ -110,9 +110,7 @@ class OrgUnit extends GoogleAPIAdminSDK
   #      This avoids a race condition in which the consumer of this library
   #      calls findOrCreate with multiple concurrency
   # 2. Increases performance
-  # We don't access the cache of the memoized function - we use our own for readability
   atomic_get_or_create: async.memoize (full_path, customer_id, level, parent, that, cb) =>
-    console.log "Call memoize fn", full_path
     async.waterfall [
       (cb_wf) =>
         # Make a request to find this OU first. Only make an insert request if the OU doesn't
@@ -129,7 +127,7 @@ class OrgUnit extends GoogleAPIAdminSDK
           # If no error, we found the orgunit. Cache it and skip insert because it already exists.
           # cache[full_path] = body
           parent = full_path
-          return cb_wf null, body
+          return cb_wf null, { body, parent }
       (body, cb_wf) =>
         # No need to insert because the org unit was found
         return cb_wf null, body if body?
