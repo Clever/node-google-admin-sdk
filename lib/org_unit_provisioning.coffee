@@ -95,36 +95,52 @@ class OrgUnit extends GoogleAPIAdminSDK
       if cache[full_path]?
         parent = full_path
         return cb_es()
-      async.waterfall [
-        (cb_wf) =>
-          # Make a request to find this OU first. Only make an insert request if the OU doesn't
-          # already exist.
-          @get args.customer_id, full_path[1..], (err, body) ->
-            if err?
-              if err.error?.code is 404 and err.error?.message is "Org unit not found"
-                # Not found; pass through to create the orgunit
-                return cb_wf null, null
-              else
-                # A valid error was returned. Return the error and skip the insert.
-                return cb_wf err
 
-            # If no error, we found the orgunit. Cache it and skip insert because it already exists.
-            cache[full_path] = body
-            parent = full_path
-            return cb_wf null, body
-        (body, cb_wf) =>
-          # No need to insert because the org unit was found
-          return cb_wf() if body?
-
-          # Google interface: `name` requires no slash, parentOrgUnitPath requires a slash
-          @insert args.customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
-            return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}" if err?
-            cache[full_path] = body
-            parent = full_path
-            cb_wf()
-      ], cb_es
+      @atomic_get_or_create full_path, args.customer_id, level, parent, @, (err, results) ->
+        return cb_es err if err?
+        cache[full_path] = results.body
+        parent = results.parent
+        cb_es err, results.body
     , (err) ->
       return die err if err?
       cb null, parent, cache
+
+  # use async.memoize for two reasons:
+  # 1. Ensure that the actual find-or-create action is executed at most once.
+  #      This avoids a race condition in which the consumer of this library
+  #      calls findOrCreate with multiple concurrency
+  # 2. Increases performance
+  # We don't access the cache of the memoized function - we use our own for readability
+  atomic_get_or_create: async.memoize (full_path, customer_id, level, parent, that, cb) =>
+    console.log "Call memoize fn", full_path
+    async.waterfall [
+      (cb_wf) =>
+        # Make a request to find this OU first. Only make an insert request if the OU doesn't
+        # already exist.
+        that.get customer_id, full_path[1..], (err, body) ->
+          if err?
+            if err.error?.code is 404 and err.error?.message is "Org unit not found"
+              # Not found; pass through to create the orgunit
+              return cb_wf null, null
+            else
+              # A valid error was returned. Return the error and skip the insert.
+              return cb_wf err
+
+          # If no error, we found the orgunit. Cache it and skip insert because it already exists.
+          # cache[full_path] = body
+          parent = full_path
+          return cb_wf null, body
+      (body, cb_wf) =>
+        # No need to insert because the org unit was found
+        return cb_wf null, body if body?
+
+        # Google interface: `name` requires no slash, parentOrgUnitPath requires a slash
+        that.insert customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
+          return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}" if err?
+          # cache[full_path] = body
+          parent = full_path
+          cb_wf null, { body, parent }
+    ], cb
+
 
 module.exports = OrgUnit

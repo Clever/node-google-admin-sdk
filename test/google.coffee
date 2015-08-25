@@ -545,6 +545,43 @@ describe 'OrgUnitProvisioning', ()->
       assert.equal parent, '/Students'
       done()
 
+  it.only 'findOrCreate properly memoizes calls to get and insert', (done) ->
+    org_unit = ['TestOU']
+    properties =
+      name: 'TestOU'
+      parentOrgUnitPath: '/'
+    body =
+      kind: 'admin#directory#orgUnit'
+      name: org_unit[0]
+      orgUnitPath: "/#{org_unit[0]}"
+      orgUnitId: 'ou_id'
+      parentOrgUnitPath: '/'
+
+    customer_id = "fake_customer_id"
+
+    nock('https://www.googleapis.com')
+      .get("/admin/directory/v1/customer/#{customer_id}/orgunits/#{org_unit[0]}")
+      .times(3)
+      .reply(404, ou_not_found)
+
+    insert_nock = nock('https://www.googleapis.com:443')
+      .post("/admin/directory/v1/customer/#{customer_id}/orgunits", properties)
+      .reply(200, body)
+
+    expected_cache = {}
+    expected_cache[body.orgUnitPath] = body
+
+    # this test is successful if the nock is hit only once, and doesn't trigger nock.disableNetConnect()
+    # on subsequent requests
+    async.each [0..100], (i, cb_e) =>
+      @ou.findOrCreate customer_id, org_unit, {}, (err, parent, returned_cache) ->
+        assert.ifError err
+        assert.deepEqual returned_cache, expected_cache
+        assert.equal parent, '/TestOU'
+        cb_e()
+    , done
+
+
   ## INSERT ##
   it 'creates an orgunit', (done) ->
     properties =
