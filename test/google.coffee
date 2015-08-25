@@ -404,7 +404,13 @@ describe 'UserProvisioning', ()->
 
 
 describe 'OrgUnitProvisioning', ()->
-  before ->
+  ou_not_found =
+    error:
+      errors: []
+      code: 404,
+      message: "Org unit not found"
+
+  beforeEach ->
     @ou = new google_apis.OrgUnitProvisioning
       token:
         access: 'access_token'
@@ -517,11 +523,25 @@ describe 'OrgUnitProvisioning', ()->
 
   it 'uses cache for OU lookup', (done) ->
     org_unit = ['Students']
-    cache = {'/Students':1, '/Students/Schoolname':1}
-    @ou.findOrCreate 'abcdef', org_unit, cache, (err, parent, cache) ->
+    first_ou =
+      kind: 'admin#directory#orgUnit'
+      name: 'Students'
+      orgUnitPath: '/Students'
+      orgUnitId: 'ou_id1'
+      parentOrgUnitPath: '/'
+    second_ou =
+      kind: 'admin#directory#orgUnit'
+      name: 'Schoolname'
+      orgUnitPath: '/Students/SchoolName'
+      orgUnitId: 'ou_id2'
+      parentOrgUnitPath: '/Students'
+    cache = {}
+    cache[first_ou.orgUnitPath] = first_ou
+    cache[second_ou.orgUnitPath] = second_ou
+    @ou.findOrCreate 'abcdef', org_unit, cache, (err, parent, returned_cache) ->
       # this test is successful if it hits the cache and doesn't trigger nock.disableNetConnect()
       assert.ifError err
-      assert.deepEqual cache, {'/Students':1, '/Students/Schoolname':1}
+      assert.deepEqual returned_cache, cache
       assert.equal parent, '/Students'
       done()
 
@@ -534,11 +554,30 @@ describe 'OrgUnitProvisioning', ()->
       kind: 'admin#directory#orgUnit'
       name: 'TestOU'
       orgUnitPath: '/TestOU'
+      orgUnitId: 'ou_id'
       parentOrgUnitPath: '/'
     nock('https://www.googleapis.com:443').persist().post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
     .reply(200, body)
     @ou.insert 'fake_customer_id', properties, (err, data) ->
       assert.deepEqual data, body
+      done()
+
+  it 'returns an orgunit if it already exists', (done) ->
+    properties =
+      name: 'TestOU'
+      parentOrgUnitPath: '/'
+    body =
+      kind: 'admin#directory#orgUnit'
+      name: 'TestOU'
+      orgUnitPath: '/TestOU'
+      orgUnitId: 'ou_id_already_exists'
+      parentOrgUnitPath: '/'
+    nock('https://www.googleapis.com:443').persist().get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+    .reply(200, body)
+    @ou.findOrCreate 'fake_customer_id', ['TestOU'], (err, parent, cache) ->
+      assert.ifError err
+      assert.deepEqual cache, {'/TestOU': body}
+      assert.equal parent, '/TestOU'
       done()
 
   it 'creates an orgunit if not found', (done) ->
@@ -549,12 +588,20 @@ describe 'OrgUnitProvisioning', ()->
       kind: 'admin#directory#orgUnit'
       name: 'TestOU'
       orgUnitPath: '/TestOU'
+      orgUnitId: 'ou_id'
       parentOrgUnitPath: '/'
-    insert_nock = nock('https://www.googleapis.com:443').post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
-    .reply(200, body)
+
+    nock('https://www.googleapis.com:443').persist()
+      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+      .reply(404, ou_not_found)
+
+    insert_nock = nock('https://www.googleapis.com:443')
+      .post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
+      .reply(200, body)
+
     @ou.findOrCreate 'fake_customer_id', ['TestOU'], (err, parent, cache) ->
       assert.ifError err
-      assert.deepEqual cache, {'/TestOU':1}
+      assert.deepEqual cache, {'/TestOU': body}
       assert.equal parent, '/TestOU'
       insert_nock.done()
       done()
@@ -567,8 +614,15 @@ describe 'OrgUnitProvisioning', ()->
     body =
       name: 'TestOU'
       orgUnitPath: '/TestOU'
-    nock('https://www.googleapis.com:443').persist().post('/admin/directory/v1/customer/fake_customer_id/orgunits?fields=name%2C%20orgUnitPath', properties)
-    .reply(200, body)
+
+    nock('https://www.googleapis.com:443').persist()
+      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+      .reply(404, ou_not_found)
+
+    nock('https://www.googleapis.com:443').persist()
+      .post('/admin/directory/v1/customer/fake_customer_id/orgunits?fields=name%2C%20orgUnitPath', properties)
+      .reply(200, body)
+
     @ou.insert 'fake_customer_id', properties, fields, (err, data) ->
       assert.deepEqual data, body
       done()
@@ -582,8 +636,15 @@ describe 'OrgUnitProvisioning', ()->
         errors: [{ domain: "global", reason: "badRequest", message: "Bad Request" }]
         code: 400
         message: "Bad Request"
-    nock('https://www.googleapis.com:443').persist().post('/admin/directory/v1/customer/badId/orgunits', properties)
-    .reply(400, error)
+
+    nock('https://www.googleapis.com:443').persist()
+      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+      .reply(404, ou_not_found)
+
+    nock('https://www.googleapis.com:443').persist()
+      .post('/admin/directory/v1/customer/badId/orgunits', properties)
+      .reply(400, error)
+
     @ou.insert 'badId', properties, (err, data) ->
       assert.deepEqual err, error
       done()
@@ -596,8 +657,15 @@ describe 'OrgUnitProvisioning', ()->
         errors: [ { domain: 'global', reason: 'invalid', message: 'Invalid Parent Orgunit Id' } ]
         code: 400
         message: 'Invalid Parent Orgunit Id'
-    nock('https://www.googleapis.com:443').persist().post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
-    .reply(400, error)
+
+    nock('https://www.googleapis.com:443').persist()
+      .get('/admin/directory/v1/customer/fake_customer_id/orgunits/TestOU')
+      .reply(404, ou_not_found)
+
+    nock('https://www.googleapis.com:443').persist()
+      .post('/admin/directory/v1/customer/fake_customer_id/orgunits', properties)
+      .reply(400, error)
+
     @ou.insert 'fake_customer_id', properties, (err, data) ->
       assert.deepEqual err, error
       done()
