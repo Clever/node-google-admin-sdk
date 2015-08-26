@@ -71,6 +71,8 @@ Creates an OrgUnit and any of its parents that need to be created. Accepts argum
 * `cache` (optional): a map of strings representing OrgUnits that are known to exist. For example, `{'/': 1, 'Users':1, 'Admins':1}
 * `callback` (optional): function of the form `callback(error, body)` to call when the response is received.
 
+Note that `findOrCreate` uses [`async.memoize`](https://github.com/caolan/async#memoize). This can cause problems with tests that expect a fresh state at the beginning of each test. You can use [`async.unmemoize`](https://github.com/caolan/async#unmemoizefn) to reset state.
+
 ### OrgUnitProvisioning.insert(customer_id, properties[, fields, callback])
 Creates an OrgUnit. Accepts arguments:
 * `customer_id`: your Google customer id.
