@@ -5,7 +5,6 @@ utils     = require "#{__dirname}/utils"
 qs        = require 'qs'
 sanitize  = require 'sanitize-arguments'
 async     = require 'async'
-retry     = require 'retry'
 
 class OrgUnit extends GoogleAPIAdminSDK
   # TODO: possibly make customer_id an option of OrgUnit
@@ -134,7 +133,7 @@ class OrgUnit extends GoogleAPIAdminSDK
 
         # Google interface: `name` requires no slash, parentOrgUnitPath requires a slash
         that.insert customer_id, { name: level, parentOrgUnitPath: parent }, (err, body) =>
-          return cb_es "Unable to create org unit #{full_path}: #{JSON.stringify err}" if err?
+          return cb_wf "Unable to create org unit #{full_path}: #{JSON.stringify err}" if err?
           # cache[full_path] = body
           parent = full_path
           cb_wf null, { body, parent }
