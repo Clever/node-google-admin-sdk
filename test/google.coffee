@@ -177,7 +177,6 @@ describe 'UserProvisioning', ()->
       assert.deepEqual err, body
       done()
 
-
   ## LIST ##
   it 'gets partial response for field argument', (done) ->
     body =
@@ -452,6 +451,21 @@ describe 'OrgUnitProvisioning', ()->
     .reply(200, body)
     @ou.get 'fake_customer_id', 'RockyRoad', (err, data) ->
       assert.deepEqual data, body
+      done()
+
+  ## get_children
+  it 'get_children makes a request to the right endpoint', (done) ->
+    ou_path = "OrgUnitName"
+    customer_id = "customer_123"
+
+    mock_endpoint = nock('https://www.googleapis.com')
+      .get("/admin/directory/v1/customer/#{customer_id}/orgunits?orgUnitPath=#{ou_path}&type=children")
+      .reply(200, {body: "OK"})
+
+    @ou.get_children customer_id, ou_path, (err, data) ->
+      assert.ifError err
+      assert.deepEqual data, {body: "OK"}
+      assert mock_endpoint.isDone()
       done()
 
   it 'can get an OrgUnit filtered by fields', (done) ->
