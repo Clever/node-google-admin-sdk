@@ -75,6 +75,25 @@ class OrgUnit extends GoogleAPIAdminSDK
     return q unless args.cb?
     q.exec args.cb
 
+  # get_children takes in a customer_id and org_unit_path and returns the children of that org unit, or an
+  # error if that org unit cannot be found.
+  # Reference: https://developers.google.com/admin-sdk/directory/v1/guides/manage-org-units#get_all_ou
+  get_children: (customer_id, org_unit_path, cb) =>
+    arglist = sanitize arguments, OrgUnit.get_children, [String, String, Function]
+    args = _.object ['customer_id', 'org_unit_path', 'cb'], arglist
+    die = utils.die_fn args.cb
+    if not args.customer_id? or not args.org_unit_path?
+      return die "OrgUnit::get_children expected (String customer_id, String org_unit_path, [, String fields, callback])"
+    opts =
+      json: true
+      uri: "https://www.googleapis.com/admin/directory/v1/customer/#{args.customer_id}/orgunits"
+      qs:
+        orgUnitPath: org_unit_path
+        type: "children"
+    q = new Query @, opts
+    return q unless args.cb?
+    q.exec args.cb
+
   # takes customer_id, array of orgunit levels eg. ['CleverStudents', 'Schoolname', ...], and optional cache, and callback
   # returns callback w/ args orgunit string '/Students/Schoolname' and cache of orgunits created '/', '/Students', '/Students/Schoolname'
   findOrCreate: (customer_id, org_unit, cache, cb) =>
