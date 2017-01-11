@@ -83,12 +83,12 @@ class OrgUnit extends GoogleAPIAdminSDK
     args = _.object ['customer_id', 'org_unit_path', 'cb'], arglist
     die = utils.die_fn args.cb
     if not args.customer_id? or not args.org_unit_path?
-      return die "OrgUnit::get_children expected (String customer_id, String org_unit_path, [, String fields, callback])"
+      return die "OrgUnit::get_children expected (String customer_id, String org_unit_path, [, callback])"
     opts =
       json: true
       uri: "https://www.googleapis.com/admin/directory/v1/customer/#{args.customer_id}/orgunits"
       qs:
-        orgUnitPath: org_unit_path
+        orgUnitPath: args.org_unit_path
         type: "children"
     q = new Query @, opts
     return q unless args.cb?
