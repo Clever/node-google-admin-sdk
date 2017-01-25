@@ -1,7 +1,7 @@
 # google-admin-sdk
 node.js library that wraps Google's Admin SDK. A subset of CRUD actions in the [Directory API](https://developers.google.com/admin-sdk/directory/v1/reference/) are supported.
 
-[![Build Status](https://drone.ops.clever.com/github.com/Clever/node-google-admin-sdk/status.svg?branch=master)](https://drone.ops.clever.com/github.com/Clever/node-google-admin-sdk)
+[![Build Status](https://circleci.com/gh/Clever/node-google-admin-sdk/tree/master.png?style=shield)](https://circleci.com/gh/Clever/node-google-admin-sdk)
 
 ## Initializing the library
 The library includes 4 submodules:
