@@ -1,6 +1,6 @@
 {
   "name": "google-admin-sdk",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "node.js library that wraps the Directory and Groups APIs in the Google Admin SDK",
   "main": "./index.js",
   "directories": {
@@ -23,7 +23,7 @@
     "coffee-script": "^1.9.0",
     "dotty": "0.0.2",
     "http-string-parser": "0.0.4",
-    "mailparser": "^0.4.8",
+    "mailparser": "^0.6.2 ",
     "qs": "^2.3.3",
     "quest": "^0.2.8",
     "retry": "^0.6.1",
