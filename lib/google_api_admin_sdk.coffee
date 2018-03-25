@@ -65,7 +65,7 @@ class GoogleAPIAdminSDK
 
         return cb null, body
       else
-        console.log 'WARNING: unhandled body', resp.statusCode, body
+        console.warn 'WARNING: unhandled body', resp.statusCode, body
         return cb null, body
 
   @request_token: (options, cb) =>
@@ -105,7 +105,7 @@ class GoogleAPIAdminSDK
         return if operation.retry GoogleAPIAdminSDK.retry_err(err, resp)
         @options.token.access = body.access_token if body.access_token?
         @options.token.id = body.id_token if body.id_token?
-        console.log 'Failed to refresh Google token!' if resp.statusCode isnt 200
+        console.warn 'Failed to refresh Google token!' if resp.statusCode isnt 200
         (GoogleAPIAdminSDK.response_handler(cb)) err, resp, body
 
   oauth2_request: (options, refreshed_already, cb) =>
