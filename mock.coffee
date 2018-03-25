@@ -121,7 +121,7 @@ module.exports =
       q.exec cb
 
     sandbox.stub admin_sdk.Batch.prototype, 'go', (queries, cb) =>
-      console.log "Doing batch of #{queries.length}"
+      console.warn "Doing batch of #{queries.length}"
       async.map queries, ((query, cb_m) ->
         query.exec (err, status_code, result) ->
           cb_m err, { statusCode: status_code, body: result }
