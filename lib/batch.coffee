@@ -38,7 +38,7 @@ class Batch
 
         options =
           method: 'post'
-          uri: "https://www.googleapis.com/batch"
+          uri: "https://www.googleapis.com/batch/admin/directory_v1"
           body: request_body
           headers:
             Authorization: "Bearer #{@google_api.options.token.access}"
