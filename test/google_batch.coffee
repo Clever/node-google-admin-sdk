@@ -96,7 +96,7 @@ describe 'Batch Requests', ->
       .get('/oauth2/v1/tokeninfo?access_token=fake_access_token')
       .reply(200, "OK")
       .filteringRequestBody(@boundary_filter)
-      .post('/batch', expected_request)
+      .post('/batch/admin/directory_v1', expected_request)
       .reply 200, expected_reply,
         { 'content-type': 'multipart/mixed; boundary=batch_7av0UPcSyII=_ABKN5zORmiQ=' }
 
@@ -148,7 +148,7 @@ describe 'Batch Requests', ->
       .get('/oauth2/v1/tokeninfo?access_token=fake_access_token')
       .reply(200, "OK")
       .filteringRequestBody(@boundary_filter)
-      .post('/batch', expected_request)
+      .post('/batch/admin/directory_v1', expected_request)
       .reply 200, expected_reply,
         { 'content-type': 'multipart/mixed; boundary=batch_7av0UPcSyII=_ABKN5zORmiQ=' }
 
@@ -166,7 +166,7 @@ describe 'Batch Requests', ->
     nock('https://www.googleapis.com:443')
       .get('/oauth2/v1/tokeninfo?access_token=fake_access_token')
       .reply(200, "OK")
-      .post('/batch')
+      .post('/batch/admin/directory_v1')
       .reply 404, "We accidently rimraf"
 
     batch = new google_apis.Batch @options
@@ -195,11 +195,11 @@ describe 'Batch Requests', ->
       .get('/oauth2/v1/tokeninfo?access_token=fake_access_token')
       .reply(200, "OK")
       .filteringRequestBody(@boundary_filter)
-      .post('/batch', expected_request)
+      .post('/batch/admin/directory_v1', expected_request)
       .reply(503, 'Enhance your calm')
-      .post('/batch', expected_request)
+      .post('/batch/admin/directory_v1', expected_request)
       .reply(503, 'Enhance your calm')
-      .post('/batch', expected_request)
+      .post('/batch/admin/directory_v1', expected_request)
       .reply 200, expected_reply,
         { 'content-type': 'multipart/mixed; boundary=batch_7av0UPcSyII=_ABKN5zORmiQ=' }
 
