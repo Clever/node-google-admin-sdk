@@ -137,10 +137,10 @@ module.exports =
         super { objectMode: true }
         @i = 0
       _read: () =>
-        data = _.deepClone @data[@i++]
-        if data?
-          @push data
-        else
+        if @i > (@data.length - 1)
           @push null
+          return
+        data = _.deepClone @data[@i++]
+        @push data
 
     admin_sdk
