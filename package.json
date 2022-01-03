@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "preinstall": "npx npm-force-resolutions",
+    "postshrinkwrap": "npx npm-force-resolutions"
   },
   "repository": {
     "type": "git",
@@ -35,6 +37,7 @@
   "devDependencies": {
     "mocha": "^2.1.0",
     "nock": "~0.47.0",
+    "npm-force-resolutions": "0.0.10",
     "sinon": "^1.12.2"
   },
   "keywords": [
@@ -56,5 +59,8 @@
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
+  },
+  "resolutions": {
+    "dotty": "^0.1.2"
   }
 }
