@@ -26,7 +26,7 @@
     "dotty": "^0.1.2",
     "http-string-parser": "0.0.4",
     "mailparser": "^0.6.2 ",
-    "qs": "^2.3.3",
+    "qs": "^6.0.4",
     "quest": "^0.2.8",
     "retry": "^0.6.1",
     "sanitize-arguments": "^2.0.3",
